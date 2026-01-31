@@ -1,0 +1,24 @@
+# Velero Dashboard Backend - Requirements
+
+# FastAPI framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+
+# Kubernetes client
+kubernetes==31.0.0
+
+# AWS S3 client (for storage validation)
+boto3==1.35.95
+
+# Environment variables management
+pydantic-settings==2.7.1
+
+# CORS middleware (included in fastapi)
+# python-multipart for form data (if needed)
+python-multipart==0.0.20
+
+# Logging
+python-json-logger==3.2.1
+
+# YAML processing for resource modifiers
+pyyaml==6.0.2

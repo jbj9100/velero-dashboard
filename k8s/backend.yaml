@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: velero-dashboard-backend
+  namespace: velero
+  labels:
+    app: velero-dashboard
+    component: backend
+spec:
+  type: ClusterIP  # Backend usually doesn't need external exposure if frontend proxies on server side, but here frontend calls API directly
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http
+  selector:
+    app: velero-dashboard
+    component: backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: velero-dashboard-backend-nodeport # Optional: for direct access during dev
+  namespace: velero
+spec:
+  type: NodePort
+  ports:
+    - port: 8000
+      targetPort: 8000
+      nodePort: 30081
+  selector:
+    app: velero-dashboard
+    component: backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: velero-dashboard-backend
+  namespace: velero
+  labels:
+    app: velero-dashboard
+    component: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: velero-dashboard
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: velero-dashboard
+        component: backend
+    spec:
+      serviceAccountName: velero-dashboard-sa # Needs RBAC to access Velero CRDs
+      containers:
+        - name: backend
+          image: velero-dashboard-backend:latest # Replace with your actual image registry path
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: velero-dashboard-backend-config
+          # Mount kubeconfig if running outside cluster (not needed in-cluster with ServiceAccount)
+          # volumeMounts: 
+          #   - name: kubeconfig
+          #     mountPath: /root/.kube/config
+          #     subPath: config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: velero-dashboard-backend-config
+  namespace: velero
+data:
+  HOST: "0.0.0.0"
+  PORT: "8000"
+  LOG_LEVEL: "info"
+  # Add other backend env vars here

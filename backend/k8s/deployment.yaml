@@ -1,0 +1,148 @@
+# Velero Dashboard Backend - Kubernetes Deployment
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: velero-dashboard-backend
+  namespace: velero
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: velero-dashboard-backend
+  namespace: velero
+rules:
+  # Backups
+  - apiGroups: ["velero.io"]
+    resources: ["backups"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  
+  # Restores
+  - apiGroups: ["velero.io"]
+    resources: ["restores"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  
+  # Schedules
+  - apiGroups: ["velero.io"]
+    resources: ["schedules"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  
+  # BackupStorageLocations
+  - apiGroups: ["velero.io"]
+    resources: ["backupstoragelocations"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: velero-dashboard-backend
+  namespace: velero
+subjects:
+  - kind: ServiceAccount
+    name: velero-dashboard-backend
+    namespace: velero
+roleRef:
+  kind: Role
+  name: velero-dashboard-backend
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: velero-dashboard-backend-cluster1
+  namespace: velero
+  labels:
+    app: velero-dashboard-backend
+    cluster: cluster1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: velero-dashboard-backend
+      cluster: cluster1
+  template:
+    metadata:
+      labels:
+        app: velero-dashboard-backend
+        cluster: cluster1
+    spec:
+      serviceAccountName: velero-dashboard-backend
+      containers:
+        - name: backend
+          image: velero-dashboard-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8001
+              name: http
+          env:
+            # Kubernetes config (in-cluster mode)
+            - name: KUBECONFIG_PATH
+              value: ""
+            
+            # Velero configuration
+            - name: VELERO_NAMESPACE
+              value: "velero"
+            
+            # Cluster identification
+            - name: CLUSTER_NAME
+              value: "cluster1"
+            
+            # API Server configuration
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "8001"
+            
+            # CORS origins (adjust for your frontend URL)
+            - name: CORS_ORIGINS
+              value: "http://localhost:5173,http://localhost:3000"
+            
+            # Logging
+            - name: LOG_LEVEL
+              value: "INFO"
+          
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: velero-dashboard-backend-cluster1
+  namespace: velero
+  labels:
+    app: velero-dashboard-backend
+    cluster: cluster1
+spec:
+  type: ClusterIP
+  selector:
+    app: velero-dashboard-backend
+    cluster: cluster1
+  ports:
+    - port: 8001
+      targetPort: 8001
+      protocol: TCP
+      name: http
