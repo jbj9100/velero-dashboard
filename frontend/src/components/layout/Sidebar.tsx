@@ -48,11 +48,21 @@ export default function Sidebar() {
                 ))}
             </nav>
 
+
             {/* Settings */}
-            <button className="w-10 h-10 rounded-lg flex items-center justify-center text-gray-400 
-                       hover:bg-gray-800/50 hover:text-primary transition-all">
+            <NavLink
+                to="/settings"
+                className={({ isActive }) =>
+                    clsx(
+                        'w-10 h-10 rounded-lg flex items-center justify-center transition-all',
+                        isActive
+                            ? 'bg-primary/15 text-primary'
+                            : 'text-gray-400 hover:bg-gray-800/50 hover:text-primary'
+                    )
+                }
+            >
                 <Settings className="w-5 h-5" />
-            </button>
+            </NavLink>
         </aside>
     )
 }

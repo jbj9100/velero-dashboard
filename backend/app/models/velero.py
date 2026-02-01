@@ -5,7 +5,7 @@ Frontend와 호환되는 API 응답 모델
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Any
 from datetime import datetime
 
 
