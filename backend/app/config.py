@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     
     # API Server Configuration
     host: str = "0.0.0.0"
-    port: int = 8001
+    port: int = 8000
     
     # CORS Configuration
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
