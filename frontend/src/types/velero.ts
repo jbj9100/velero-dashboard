@@ -24,6 +24,8 @@ export interface Schedule {
     schedule: string
     lastBackup: string | null
     enabled: boolean
+    phase?: string
+    ttl?: string
     template?: {
         includedNamespaces?: string[]
         excludedNamespaces?: string[]

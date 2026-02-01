@@ -1,19 +1,24 @@
 import { useState } from 'react'
-import { useClusterStore } from '@/store/clusterStore'
+import { useClusterStore, type ClusterRole } from '@/store/clusterStore'
 import { Card, CardHeader, CardContent } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
+import ClusterRoleBadge from '@/components/ui/ClusterRoleBadge'
 import { Trash2, Plus, Server } from 'lucide-react'
 import clsx from 'clsx'
 
 export default function SettingsPage() {
     const { clusters, activeClusterId, addCluster, removeCluster, setActiveCluster } = useClusterStore()
     const [isAdding, setIsAdding] = useState(false)
-    const [newCluster, setNewCluster] = useState({ name: '', url: '' })
+    const [newCluster, setNewCluster] = useState<{ name: string; url: string; role: ClusterRole }>({
+        name: '',
+        url: '',
+        role: 'both'
+    })
 
     const handleAdd = () => {
         if (newCluster.name && newCluster.url) {
             addCluster(newCluster)
-            setNewCluster({ name: '', url: '' })
+            setNewCluster({ name: '', url: '', role: 'both' })
             setIsAdding(false)
         }
     }
@@ -63,6 +68,19 @@ export default function SettingsPage() {
                                             onChange={(e) => setNewCluster({ ...newCluster, url: e.target.value })}
                                         />
                                     </div>
+                                    <div>
+                                        <label className="block text-xs text-gray-400 mb-1">Cluster Role</label>
+                                        <select
+                                            className="w-full bg-dark-950 border border-gray-700 rounded-lg px-3 py-2 text-gray-100 focus:border-primary focus:outline-none"
+                                            value={newCluster.role}
+                                            onChange={(e) => setNewCluster({ ...newCluster, role: e.target.value as ClusterRole })}
+                                        >
+                                            <option value="source">Source (Backup)</option>
+                                            <option value="destination">Destination (Restore)</option>
+                                            <option value="both">Both</option>
+                                        </select>
+                                        <p className="text-xs text-gray-500 mt-1">Define the purpose of this cluster</p>
+                                    </div>
                                 </div>
                                 <div className="flex justify-end space-x-2">
                                     <Button variant="ghost" size="sm" onClick={() => setIsAdding(false)}>Cancel</Button>
@@ -90,10 +108,11 @@ export default function SettingsPage() {
                                         <Server className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <h4 className="font-medium text-gray-100 flex items-center">
+                                        <h4 className="font-medium text-gray-100 flex items-center gap-2">
                                             {cluster.name}
+                                            <ClusterRoleBadge role={cluster.role} size="sm" />
                                             {cluster.id === activeClusterId && (
-                                                <span className="ml-2 text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">Active</span>
+                                                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">Active</span>
                                             )}
                                         </h4>
                                         <p className="text-sm text-gray-500">{cluster.url}</p>

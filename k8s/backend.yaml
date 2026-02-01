@@ -2,12 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: velero-dashboard-backend
-  namespace: velero
+  namespace: velero-dashboard
   labels:
     app: velero-dashboard
     component: backend
 spec:
-  type: ClusterIP  # Backend usually doesn't need external exposure if frontend proxies on server side, but here frontend calls API directly
+  type: ClusterIP
   ports:
     - port: 8000
       targetPort: 8000
@@ -19,8 +19,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: velero-dashboard-backend-nodeport # Optional: for direct access during dev
-  namespace: velero
+  name: velero-dashboard-backend-nodeport
+  namespace: velero-dashboard
 spec:
   type: NodePort
   ports:
@@ -35,7 +35,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: velero-dashboard-backend
-  namespace: velero
+  namespace: velero-dashboard
   labels:
     app: velero-dashboard
     component: backend
@@ -51,29 +51,23 @@ spec:
         app: velero-dashboard
         component: backend
     spec:
-      serviceAccountName: velero-dashboard-sa # Needs RBAC to access Velero CRDs
+      serviceAccountName: velero-dashboard-sa
       containers:
         - name: backend
-          image: velero-dashboard-backend:latest # Replace with your actual image registry path
-          imagePullPolicy: IfNotPresent
+          image: 192.168.19.144:5000/velero-dashboard-backend:v1 # Placeholder for consistency
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           envFrom:
             - configMapRef:
                 name: velero-dashboard-backend-config
-          # Mount kubeconfig if running outside cluster (not needed in-cluster with ServiceAccount)
-          # volumeMounts: 
-          #   - name: kubeconfig
-          #     mountPath: /root/.kube/config
-          #     subPath: config
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: velero-dashboard-backend-config
-  namespace: velero
+  namespace: velero-dashboard
 data:
   HOST: "0.0.0.0"
   PORT: "8000"
   LOG_LEVEL: "info"
-  # Add other backend env vars here

@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { Card } from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
@@ -5,15 +6,28 @@ import Badge from '@/components/ui/Badge'
 import { useRestores } from '@/hooks/useRestores'
 import { formatDate, formatDuration } from '@/utils/formatters'
 import { getPhaseVariant, getPhaseLabel } from '@/utils/phase'
-import { Plus, RefreshCw, AlertCircle } from 'lucide-react'
+import { Plus, RefreshCw, AlertCircle, FileText } from 'lucide-react'
 import type { Restore } from '@/types/velero'
-
+import { getRestoreLogs } from '@/api/client'
 import { useNavigate } from 'react-router-dom'
 
 export default function RestoresPage() {
     const navigate = useNavigate()
     const { data: restores, isLoading, error, refetch } = useRestores()
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+
+    const handleViewLogs = async (name: string) => {
+        try {
+            const logs = await getRestoreLogs(name)
+            if (logs.downloadUrl) {
+                window.open(logs.downloadUrl, '_blank')
+            } else {
+                alert('No logs available')
+            }
+        } catch (e) {
+            alert('Failed to fetch logs')
+        }
+    }
 
     if (error) {
         return (
@@ -86,12 +100,15 @@ export default function RestoresPage() {
                                 <th className="text-left py-3 px-4 text-xs font-semibold text-gray-400 uppercase">
                                     Errors
                                 </th>
+                                <th className="text-right py-3 px-4 text-xs font-semibold text-gray-400 uppercase">
+                                    Actions
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             {isLoading && (
                                 <tr>
-                                    <td colSpan={7} className="py-12 text-center">
+                                    <td colSpan={8} className="py-12 text-center">
                                         <RefreshCw className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-3" />
                                         <p className="text-gray-400">Loading restores...</p>
                                     </td>
@@ -100,7 +117,7 @@ export default function RestoresPage() {
 
                             {!isLoading && restores && restores.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="py-12 text-center">
+                                    <td colSpan={8} className="py-12 text-center">
                                         <p className="text-gray-400">No restores found</p>
                                         <Button
                                             variant="secondary"
@@ -149,6 +166,11 @@ export default function RestoresPage() {
                                             ) : (
                                                 <span className="text-gray-500">0</span>
                                             )}
+                                        </td>
+                                        <td className="py-3 px-4 text-right">
+                                            <Button size="sm" variant="secondary" onClick={(e) => { e.stopPropagation(); handleViewLogs(restore.name); }}>
+                                                <FileText className="w-4 h-4" />
+                                            </Button>
                                         </td>
                                     </tr>
                                 ))}

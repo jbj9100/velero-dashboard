@@ -1,14 +1,17 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Database, Upload, Calendar, FolderOpen, Settings } from 'lucide-react'
+import { Home, Database, Upload, Calendar, Settings, Activity } from 'lucide-react'
 import clsx from 'clsx'
+
 
 const navItems = [
     { to: '/', icon: Home, label: 'Dashboard' },
     { to: '/backups', icon: Database, label: 'Backups' },
     { to: '/restores', icon: Upload, label: 'Restores' },
     { to: '/schedules', icon: Calendar, label: 'Schedules' },
-    { to: '/storage', icon: FolderOpen, label: 'Storage' },
+    { to: '/system', icon: Activity, label: 'System Status' },
+    // { to: '/storage', icon: FolderOpen, label: 'Storage' },
 ]
+
 
 export default function Sidebar() {
     return (

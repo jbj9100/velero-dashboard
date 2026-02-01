@@ -1,6 +1,7 @@
 import { Bell, Settings } from 'lucide-react'
 import { useClusterStore } from '@/store/clusterStore'
 import { useNavigate } from 'react-router-dom'
+import ClusterRoleBadge from '@/components/ui/ClusterRoleBadge'
 
 export default function TopNav() {
     const { clusters, activeClusterId, setActiveCluster, getActiveCluster } = useClusterStore()
@@ -12,9 +13,10 @@ export default function TopNav() {
             <div className="flex items-center space-x-4">
                 <h1 className="text-xl font-semibold text-gray-100">Velero Dashboard</h1>
                 {activeCluster ? (
-                    <div className="flex items-center space-x-2 px-3 py-1.5 bg-success/10 rounded-lg border border-success/30">
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-success/10 rounded-lg border border-success/30">
                         <div className="w-2 h-2 rounded-full bg-success animate-pulse"></div>
                         <span className="text-sm text-success font-medium">Connected: {activeCluster.name}</span>
+                        <ClusterRoleBadge role={activeCluster.role} size="sm" />
                     </div>
                 ) : (
                     <div className="flex items-center space-x-2 px-3 py-1.5 bg-danger/10 rounded-lg border border-danger/30">
@@ -33,9 +35,11 @@ export default function TopNav() {
                     onChange={(e) => setActiveCluster(e.target.value)}
                 >
                     <option value="" disabled>Select Cluster</option>
-                    {clusters.map(cluster => (
-                        <option key={cluster.id} value={cluster.id}>{cluster.name}</option>
-                    ))}
+                    {clusters.map(cluster =>
+                        <option key={cluster.id} value={cluster.id}>
+                            {cluster.name} [{cluster.role.toUpperCase()}]
+                        </option>
+                    )}
                 </select>
 
                 <button

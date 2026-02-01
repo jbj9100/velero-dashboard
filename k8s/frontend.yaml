@@ -2,16 +2,16 @@ apiVersion: v1
 kind: Service
 metadata:
   name: velero-dashboard-frontend
-  namespace: velero
+  namespace: velero-dashboard
   labels:
     app: velero-dashboard
     component: frontend
 spec:
-  type: NodePort  # Or LoadBalancer based on your need
+  type: NodePort
   ports:
     - port: 80
       targetPort: 80
-      nodePort: 30080  # Optional: Fixed NodePort for easy access
+      nodePort: 30080
   selector:
     app: velero-dashboard
     component: frontend
@@ -20,7 +20,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: velero-dashboard-frontend
-  namespace: velero
+  namespace: velero-dashboard
   labels:
     app: velero-dashboard
     component: frontend
@@ -38,23 +38,18 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: velero-dashboard-frontend:latest  # Replace with your actual image registry path
-          imagePullPolicy: IfNotPresent
+          image: 192.168.19.144:5000/velero-dashboard-frontend:v1  # Updated to match user's build tag context
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
           env:
-            # If you need to inject environment variables at runtime (requires specific entrypoint setup)
             - name: VITE_API_BASE_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: velero-dashboard-config
-                  key: api_url
+              value: "http://192.168.19.144:30081/api" # Direct injection for simplicity in NodePort setup
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: velero-dashboard-frontend-config
-  namespace: velero
+  namespace: velero-dashboard
 data:
-  # Nginx config can be mounted here if needed, but usually baked in or mounted separately
   custom-config: "true"

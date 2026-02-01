@@ -1,10 +1,13 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+export type ClusterRole = 'source' | 'destination' | 'both'
+
 export interface Cluster {
     id: string
     name: string
     url: string
+    role: ClusterRole
 }
 
 interface ClusterState {
@@ -21,7 +24,7 @@ export const useClusterStore = create<ClusterState>()(
     persist(
         (set, get) => ({
             clusters: [
-                { id: 'default', name: 'Default Cluster', url: 'http://localhost:8000' }
+                { id: 'default', name: 'Default Cluster', url: 'http://localhost:8000', role: 'both' }
             ],
             activeClusterId: 'default',
 

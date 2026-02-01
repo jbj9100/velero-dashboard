@@ -6,6 +6,8 @@ import BackupsPage from './pages/BackupsPage'
 import RestoresPage from './pages/RestoresPage'
 import CreateRestoreWithModificationsPage from './pages/CreateRestoreWithModificationsPage'
 import SettingsPage from './pages/SettingsPage'
+import SchedulesPage from './pages/SchedulesPage'
+import SystemStatusPage from './pages/SystemStatusPage'
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -26,6 +28,8 @@ function App() {
                         <Route path="backups" element={<BackupsPage />} />
                         <Route path="restores" element={<RestoresPage />} />
                         <Route path="restores/create-with-mods" element={<CreateRestoreWithModificationsPage />} />
+                        <Route path="schedules" element={<SchedulesPage />} />
+                        <Route path="system" element={<SystemStatusPage />} />
                         <Route path="settings" element={<SettingsPage />} />
                     </Route>
                 </Routes>
