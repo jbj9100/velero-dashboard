@@ -10,6 +10,15 @@ export interface Cluster {
     role: ClusterRole
 }
 
+// Simple UUID v4 generator (fallback for crypto.randomUUID)
+function generateUUID(): string {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0
+        const v = c === 'x' ? r : (r & 0x3) | 0x8
+        return v.toString(16)
+    })
+}
+
 interface ClusterState {
     clusters: Cluster[]
     activeClusterId: string | null
@@ -29,7 +38,7 @@ export const useClusterStore = create<ClusterState>()(
             activeClusterId: 'default',
 
             addCluster: (cluster) => {
-                const id = crypto.randomUUID()
+                const id = generateUUID()
                 set((state) => ({
                     clusters: [...state.clusters, { ...cluster, id }],
                     // If it's the first cluster, make it active

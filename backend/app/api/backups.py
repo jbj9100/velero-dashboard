@@ -110,7 +110,7 @@ async def create_backup(request: CreateBackupRequest):
 @router.get("/{name}", response_model=Backup)
 async def get_backup(name: str):
     """
-    Get a specific Backup
+    Get aspecific Backup
     
     Args:
         name: Backup name
@@ -128,4 +128,85 @@ async def get_backup(name: str):
         logger.error(f"Error getting backup {name}: {e}")
         if "not found" in str(e).lower():
             raise HTTPException(status_code=404, detail=f"Backup '{name}' not found")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/{name}")
+async def delete_backup(name: str):
+    """
+    Delete a Backup
+    
+    Args:
+        name: Backup name
+    
+    Returns:
+        Success message
+    """
+    try:
+        logger.info(f"Deleting backup: {name}")
+        k8s_client.delete_backup(name)
+        return {"message": f"Backup '{name}' deleted successfully"}
+    
+    except Exception as e:
+        logger.error(f"Error deleting backup {name}: {e}")
+        if "not found" in str(e).lower():
+            raise HTTPException(status_code=404, detail=f"Backup '{name}' not found")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{name}/logs")
+async def get_backup_logs(name: str):
+    """
+    Get Backup logs (download request)
+    
+    Args:
+        name: Backup name
+    
+    Returns:
+        Download URL or logs content
+    """
+    try:
+        logger.info(f"Getting backup logs: {name}")
+        logs = k8s_client.get_backup_logs(name)
+        return {"downloadUrl": logs} if logs else {"message": "Logs not available yet"}
+    
+    except Exception as e:
+        logger.error(f"Error getting backup logs {name}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{name}/volume-backups")
+async def get_backup_volume_backups(name: str):
+    """
+    Get PodVolumeBackups for a Backup
+    
+    Args:
+        name: Backup name
+    
+    Returns:
+        List of PodVolumeBackup objects
+    """
+    try:
+        logger.info(f"Getting volume backups for: {name}")
+        pvbs_raw = k8s_client.list_pod_volume_backups(backup_name=name)
+        
+        pvbs = []
+        for pvb in pvbs_raw:
+            metadata = pvb.get("metadata", {})
+            spec = pvb.get("spec", {})
+            status = pvb.get("status", {})
+            
+            pvbs.append({
+                "name": metadata.get("name", ""),
+                "pvcName": spec.get("pod", {}).get("volumes", [{}])[0].get("pvcName", ""),
+                "volumeName": spec.get("volume", ""),
+                "phase": status.get("phase", "New"),
+                "message": status.get("message", ""),
+                "progress": status.get("progress", {})
+            })
+        
+        return pvbs
+    
+    except Exception as e:
+        logger.error(f"Error getting volume backups {name}: {e}")
         raise HTTPException(status_code=500, detail=str(e))

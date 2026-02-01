@@ -8,7 +8,7 @@ import logging
 import sys
 
 from app.config import settings
-from app.api import backups, restores, schedules, storage
+from app.api import backups, restores, schedules, storage, system
 
 # Configure logging
 logging.basicConfig(
@@ -42,6 +42,7 @@ app.include_router(backups.router)
 app.include_router(restores.router)
 app.include_router(schedules.router)
 app.include_router(storage.router)
+app.include_router(system.router)
 
 
 @app.get("/")

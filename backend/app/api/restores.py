@@ -278,3 +278,24 @@ async def get_restore(name: str):
         if "not found" in str(e).lower():
             raise HTTPException(status_code=404, detail=f"Restore '{name}' not found")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{name}/logs")
+async def get_restore_logs(name: str):
+    """
+    Get Restore logs (download request)
+    
+    Args:
+        name: Restore name
+    
+    Returns:
+        Download URL or logs content
+    """
+    try:
+        logger.info(f"Getting restore logs: {name}")
+        logs = k8s_client.get_restore_logs(name)
+        return {"downloadUrl": logs} if logs else {"message": "Logs not available yet"}
+    
+    except Exception as e:
+        logger.error(f"Error getting restore logs {name}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
